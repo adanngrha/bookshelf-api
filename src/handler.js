@@ -73,10 +73,41 @@ const addBookHandler = (request, h) => {
 
 // menampilkan seluruh buku
 const getAllBooksHandler = (request, h) => {
+  const { reading, finished, name } = request.query;
+
+  let newBooks = books;
+
+  // menampilkan buku yang sudah dibaca atau belum
+  if (reading) {
+    // menampilkan buku yang sudah dibaca
+    if (reading === '1') {
+      newBooks = books.filter((book) => book.reading === true);
+    } else {
+      // menampilkan buku yang belum dibaca
+      newBooks = books.filter((book) => book.reading === false);
+    }
+  }
+
+  // menampilkan buku yang sudah tamat dibaca atau belum
+  if (finished) {
+    // menampilkan buku yang sudah tamat dibaca
+    if (finished === '1') {
+      newBooks = books.filter((book) => book.finished === true);
+    } else {
+      // menampilkan buku yang belum tamat dibaca
+      newBooks = books.filter((book) => book.finished === false);
+    }
+  }
+
+  // menampilkan buku sesusai nama yang diinginkan
+  if (name) {
+    newBooks = books.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()));
+  }
+
   const response = h.response({
     status: 'success',
     data: {
-      books: books.map(({ id, name, publisher }) => ({ id, name, publisher })),
+      books: newBooks.map((item) => ({ id: item.id, name: item.name, publisher: item.publisher })),
     },
   });
   response.code(200);
@@ -85,8 +116,8 @@ const getAllBooksHandler = (request, h) => {
 
 // menampilkan detail buku
 const getBookByIdHandler = (request, h) => {
-  const { id } = request.params;
-  const book = books.filter((a) => a.id === id)[0];
+  const { bookId } = request.params;
+  const book = books.find((a) => a.id === bookId);
 
   if (book !== undefined) {
     const response = h.response({
@@ -107,14 +138,14 @@ const getBookByIdHandler = (request, h) => {
 
 // mengubah data buku
 const editBookByIdHandler = (request, h) => {
-  const { id } = request.params;
+  const { bookId } = request.params;
 
   const {
     name, year, author, summary,
     publisher, pageCount, readPage, reading,
   } = request.payload;
 
-  if (name === '') {
+  if (name === undefined) {
     const response = h.response({
       status: 'fail',
       message: 'Gagal memperbarui buku. Mohon isi nama buku',
@@ -133,7 +164,7 @@ const editBookByIdHandler = (request, h) => {
   }
 
   const updatedAt = new Date().toISOString();
-  const index = books.findIndex((book) => book.id === id);
+  const index = books.findIndex((book) => book.id === bookId);
 
   if (index !== -1) {
     books[index] = {
@@ -166,9 +197,9 @@ const editBookByIdHandler = (request, h) => {
 
 // menghapus buku
 const deleteBookByIdHandler = (request, h) => {
-  const { id } = request.params;
+  const { bookId } = request.params;
 
-  const index = books.findIndex((book) => book.id === id);
+  const index = books.findIndex((book) => book.id === bookId);
 
   if (index !== -1) {
     books.splice(index, 1);
