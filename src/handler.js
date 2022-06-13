@@ -104,6 +104,7 @@ const getAllBooksHandler = (request, h) => {
     newBooks = books.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()));
   }
 
+  // menampilkan semua buku
   const response = h.response({
     status: 'success',
     data: {
